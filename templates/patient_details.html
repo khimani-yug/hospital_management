@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Details</title>
+    <link rel="stylesheet" href="{% static 'css/patient_details.css' %}">
+    <script src="https://kit.fontawesome.com/c1373248b1.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    {% csrf_token %}
+
+    <div class="header">
+        <h1><i class="fa fa-hospital-o" aria-hidden="true"></i> Radha Krishna Multispeciality Hospital</h1>
+    </div>
+
+    <div id="main">
+        <div class="info">
+            <h2><i class="fas fa-user-injured"></i> Patient Info</h2>
+            <ul>
+                <li><strong>Name:</strong> {{ patient_detail.patient_name.first_name }} {{ patient_detail.patient_name.last_name }}</li>
+                <li><strong>Email:</strong> {{ patient_detail.patient_name.email }}</li>
+                <li><strong>Department:</strong> {{ patient_detail.patient_name.department }}</li>
+                <li><strong>Admit Date:</strong> {{ patient_detail.admit_date }}</li>
+                <li><strong>Ward:</strong> {{ patient_detail.ward_number }} | <strong>Bed:</strong> {{ patient_detail.bed_number }}</li>
+                <li><strong>Condition:</strong> {{ patient_detail.description }}</li>
+            </ul>
+        </div>
+
+        <div class="side">
+            <div class="dr">
+                <h2><i class="fas fa-user-md"></i> Assigned Doctors</h2>
+                <ul>
+                    {% for i in patient_detail.doctor.all %}
+                        <li><b>{{ i.username }}</b></li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            {% if request.session.user_data.role.name == 'Receptionist' %}
+            <div class="report">
+                <form method="post" action="{% url 'upload_report' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="id" value="{{ patient_detail.patient_name.id }}">
+                    <label for="report"><i class="fas fa-file-upload"></i> Upload Report:</label><br>
+                    <input type="file" id="report" name="file">
+                    <button type="submit">Submit</button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="showreport">
+        <h3><i class="fas fa-folder-open"></i> Reports</h3>
+        {% for i in page_obj_report.object_list %}
+            {%if i.report != "" %}
+                <a href="{{ i.report.url }}" target="_blank"><i class="fas fa-file-medical"></i> {{ i.report }}</a><br>
+            {% endif %}    
+        {% endfor %}
+
+        <div class="pagination">
+            {% if page_obj_report.has_previous %}
+                <a href="?page={{ page_obj_report.previous_page_number }}&user_role={{user_role}}&search={{search}}">&lt;</a>
+            {% endif %}
+            <span>{{ page_obj_report.number }}</span>
+            {% if page_obj_report.has_next %}
+                <a href="?page={{ page_obj_report.next_page_number }}&user_role={{user_role}}&search={{search}}">&gt;</a>
+            {% endif %}
+            {% if page_obj_report.number != total_report_page %}
+                <span>Total Page {{ total_report_page }}</span>
+            {% endif %}
+        </div>
+    </div>
+
+    
+
+    {% if request.session.user_data.role.name == 'Doctor' %}
+    <div style="text-align: center;">
+        <a class="add-record-btn" href="{% url 'add_patient_record' %}?patient_detail={{patient_detail.patient_name.id}}&doctor={{request.session.user_data.id}}">
+            <i class="fas fa-plus-circle"></i> Add Record
+        </a>
+    </div>
+    
+    {% endif %}
+
+    <div class="record-section">
+        <h2><i class="fas fa-notes-medical"></i> Medical Records</h2>
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>BP</th>
+                    <th>Sugar</th>
+                    <th>Oxygen</th>
+                    <th>Description</th>
+                    {% if request.session.user_data.role.name == 'Doctor' %}
+                        <th>Delete</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for i in page_obj.object_list %}
+                <tr>
+                    <td>{{ i.patient_id.username }}</td>
+                    <td>{{ i.doctor.username }}</td>
+                    <td>{{ i.date }}</td>
+                    <td>{{ i.time }}</td>
+                    <td>{{ i.bood_presure }}</td>
+                    <td>{{ i.sugar }}</td>
+                    <td>{{ i.oxygen }}</td>
+                    <td>{{ i.description }}</td>
+                    {% if request.session.user_data.role.name == 'Doctor' %}
+                    <td><a href="{% url 'delete_report' i.id %}" class="delete-btn"><i class="fas fa-trash-alt"></i></a></td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&user_role={{user_role}}&search={{search}}">&lt;</a>
+        {% endif %}
+        <span>{{ page_obj.number }}</span>
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&user_role={{user_role}}&search={{search}}">&gt;</a>
+        {% endif %}
+        {% if page_obj.number != total_page %}
+            <span>Total Page {{ total_page }}</span>
+        {% endif %}
+    </div>
+
+    {% if request.session.user_data.role.name == 'Doctor' %}
+    <div class="visit-section">
+        <form method="post" action="{% url 'doctor_visit' %}">
+            {% csrf_token %}
+            <input type="hidden" name="visited_patient_id" value="{{ patient_detail.patient_name.id }}">
+            <input type="hidden" name="visited_doctor_id" value="{{ request.session.user_data.id }}">
+            <button type="submit" name="visited" value="True">Mark as Visited</button>
+        </form>
+    </div>
+    {% endif %}
+
+    <div class="visit-table">
+        <h2><i class="fas fa-stethoscope"></i> Doctor Visits</h2>
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>Doctor</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for i in visited %}
+                <tr>
+                    <td>{{ i.doctor_visit_id.username }}</td>
+                    <td>{{ i.date }}</td>
+                    <td>{{ i.time }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+    {% if request.session.user_data.role.name == 'Receptionist' %}
+    <div class="bill-link">
+          {% if patient_detail.discharge == True %}
+           <a href="{% url 'bill' %}?patient_detail={{ patient_detail.patient_name.id }}">
+              <i class="fas fa-file-invoice-dollar"></i> Generate Bill
+            </a>
+           
+            {% else %}
+            <a href="{%url 'discharge' %}?patient_detail={{ patient_detail.patient_name.id }}">
+             Discharge
+            </a>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    {% if request.session.user_data.role.name == 'Patient' %}
+    <div class="bill-link">
+        {% if patient_detail.discharge == True %}
+           <a href="{% url 'bill' %}?patient_detail={{ patient_detail.patient_name.id }}">
+              <i class="fas fa-file-invoice-dollar"></i> Generate Bill
+            </a>
+        {% endif %}
+    {% endif %}
+    </div>
+
+    <p class="extra"><i class="fas fa-heartbeat"></i> Have a nice day, stay happy & healthy.</p>
+    {% if request.session.user_data.role.name == 'Receptionist' %}
+      <a class="back"  href="/">Home</a>
+    {% endif %}
+    {% if request.session.user_data.role.name == 'Doctor' %}
+      <a class="back"  href="/">Back</a>
+    {% endif %}
+    {% if request.session.user_data.role.name == 'Patient' %}
+        <a href="{% url 'logout' %}" class="logout">Logout</a>
+    {% endif %}
+  
+
+
+</body>
+</html>

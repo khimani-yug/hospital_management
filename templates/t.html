@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{{ reminder_type }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f9f9f9;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header h2 {
+            color: #d9534f;
+        }
+        .info-block {
+            margin-bottom: 20px;
+        }
+        .info-block strong {
+            display: inline-block;
+            width: 160px;
+        }
+        .footer {
+            text-align: center;
+            color: #888;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>⏰ {{ reminder_type }}</h2>
+        </div>
+        <div class="info-block">
+            <p>Hi {{ user_name }},</p>
+            <p>This is a reminder that the following document {{ reminder_message }}:</p>
+
+            <p><strong>📄 Document Name:</strong> {{ document_name }}</p>
+            <p><strong>📅 Expiry Date:</strong> {{ expiry_date }}</p>
+        </div>
+
+        <p>Please ensure the document is reviewed or renewed before the due date to avoid any interruptions.</p>
+
+        <p>Best regards,<br/>
+        <strong>{{ sender_name }}</strong></p>
+
+        <div class="footer">
+            <hr style="border: none; border-top: 1px solid #ccc;" />
+            <p>This is an automated reminder. Please do not reply directly to this email.</p>
+        </div>
+    </div>
+</body>
+</html>
+
+
+
+# class EsignaturePublishedDoc(PacBaseModel):
+#     publish_doc_esign = models.ForeignKey(PublishDocument, on_delete=models.SET_NULL, null=True, related_name='publish_doc_esign')
+#     approved_reject_date  = models.DateTimeField(auto_now_add=True)
+#     is_approve =  models.BooleanField(default=False)
+#     reason = models.TextField()
+#     esignature_users = models.ForeignKey(User, on_delete=models.SET_NULL, null=True,blank=True, related_name='esignature_users')
+
+
+
+
+# payload
+{
+"task_id":422,
+"esigne_users":[{
+    "esigne_user":"romit",
+    "signature_cordinate":[{page1},{page2}],        
+    },
+    {
+    "esigne_user":"shrinivas",
+    "signature_cordinate":[{page1}],        
+    }]
+}
+
+
+
+{
+"task_id":422,
+"esign_user":{"id":13,"esign":"http:esign.jpg"},
+"signature_cordinate": [{},{},{}]
+}
+
+

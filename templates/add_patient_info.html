@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add/Edit Patient Info</title>
+    <link rel="stylesheet" href="{% static 'css/add_patient_info.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+   
+</head>
+
+<body>
+    <div id="main">
+        <h1><i class="fa-solid fa-user-injured"></i> Add Patient Info</h1>
+
+        <form action="{% url 'edit_patient_info' %}" method="post">
+            {% csrf_token %}
+
+            <input type="hidden" name="user_id" value="{{ users_info.id }}">
+            <input type="hidden" name="id" value="{{ patient_info.id }}">
+            {% if messages %}
+              <p>{{ message }}</p>
+            {% endif %}
+            <label for="edit_name">Username</label>
+            <input type="text" id="edit_name" name="edit_name" value="{{ users_info.username }}">
+
+            <label for="edit_email">Email</label>
+            <input type="email" id="edit_email" name="edit_email" value="{{ users_info.email }}">
+
+            <label for="edit_fname">First Name</label>
+            <input type="text" id="edit_fname" name="edit_fname" value="{{ users_info.first_name }}">
+
+            <label for="edit_lname">Last Name</label>
+            <input type="text" id="edit_lname" name="edit_lname" value="{{ users_info.last_name }}">
+
+            <label for="edit_role">Role</label>
+            <select name="edit_role" id="edit_role">
+                {% for i in roles %}
+                    <option value="{{ i.id }}" {% if i == users_info.role %}selected{% endif %}>{{ i.name }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="edit_department">Department</label>
+            <select name="edit_department" id="edit_department">
+                {% for i in departments %}
+                    <option value="{{ i.id }}" {% if i == users_info.department %}selected{% endif %}>{{ i.name }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="admit">Admit Date</label>
+            <input type="date" id="admit" name="admit_date" value="{{ patient_info.admit_date|date:'Y-m-d'}}">
+
+            <label for="ward">Ward</label>
+            <select name="ward" id="ward">
+                {% for i in ward %}
+                    <option value="{{ i.id }}" {% if i == patient_info.ward_number %}selected{% endif %}>{{ i }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="bed">Bed No</label>
+            <select name="bed" id="bed">
+                {% for i in bed %}
+                    <option value="{{ i.id }}" {% if i == patient_info.bed_number %}selected{% endif %}>{{ i }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="description">Description</label>
+            <input type="text" id="description" name="description" value="{{ patient_info.description }}">
+
+            <label for="doctor">Doctor(s)</label>
+            <select name="doctor" id="doctor" multiple>
+                {% for i in doctor %}
+                    <option value="{{ i.id }}" {% if i in patient_info.doctor.all %}selected{% endif %}>{{ i }}</option>
+                {% endfor %}
+            </select>
+
+            <button type="submit"><i class="fa-solid fa-floppy-disk"></i> Submit</button>
+        </form>
+        <a class="back"  href="{{request.META.HTTP_REFERER}}">Back</a>
+    </div>
+</body>
+
+</html>

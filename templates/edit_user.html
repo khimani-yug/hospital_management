@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Info | RKMSH</title>
+    <link rel="stylesheet" href="{% static 'css/user_edit.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet" />
+    
+</head>
+
+<body>
+    {% csrf_token %}
+    <div id="main">
+        <div id="honame">
+            <h2><i class="fa-solid fa-hospital"></i> Radha Krishna Multispeciality Hospital</h2>
+        </div>
+
+        <form action="{% url 'add_edit' %}" method="post">
+            {% csrf_token %}
+
+            <input type="hidden" name="id" value="{{ users_info.id }}" />
+
+            <div class="field-group">
+                <label for="edit_name"><i class="fa-solid fa-user form-icon"></i>Username</label>
+                <input type="text" id="edit_name" name="edit_name" value="{{ users_info.username }}" required>
+            </div>
+
+            <div class="field-group">
+                <label for="edit_email"><i class="fa-solid fa-envelope form-icon"></i>Email</label>
+                <input type="email" id="edit_email" name="edit_email" value="{{ users_info.email }}"required>
+            </div>
+
+            <div class="field-group">
+                <label for="edit_fname"><i class="fa-solid fa-user-pen form-icon"></i>First Name</label>
+                <input type="text" id="edit_fname" name="edit_fname" value="{{ users_info.first_name }}" required>
+            </div>
+
+            <div class="field-group">
+                <label for="edit_lname"><i class="fa-solid fa-user-pen form-icon"></i>Last Name</label>
+                <input type="text" id="edit_lname" name="edit_lname" value="{{ users_info.last_name }}"required>
+            </div>
+
+            <div class="field-group">
+                <label for="edit_role"><i class="fa-solid fa-user-tag form-icon"></i>Role</label>
+                <select name="edit_role" id="edit_role" >
+                    {% for i in roles %}
+                    <option value="{{ i.id }}" {% if i.name == user_role %}selected{% endif %}>{{ i.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="field-group">
+                <label for="edit_department"><i class="fa-solid fa-building form-icon"></i>Department</label>
+                <select name="edit_department" id="edit_department">
+                    {% for i in departments %}
+                    <option value="{{ i.id }}" {% if i == users_info.department %}selected{% endif %}>{{ i.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            {% if user_role == 'Doctor' %}
+                <div class="field-group">
+                    <label for="charges"><i class="fa-solid fa-indian-rupee-sign form-icon"></i>Charges</label>
+                    <input type="number" id="charges" name="charges" required>
+                </div>
+            {% endif %}
+
+            {% if not users_info.id %}
+             <div class="field-group">
+                <label for="password"><i class="fa-solid fa-lock form-icon"></i>Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+
+            <div class="field-group">
+                <label for="repassword"><i class="fa-solid fa-lock form-icon"></i>Re-enter Password</label>
+                <input type="password" id="repassword" name="repassword" required>
+            </div>
+
+            {% if messages %}
+                <div class="message">
+                    {% for message in messages %}
+                        {{ message }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% endif %}
+
+            <button type="submit"><i class="fa-solid fa-paper-plane"></i> Submit</button>
+        </form>
+        <a class="back"  href="{{request.META.HTTP_REFERER}}">Back</a>
+    </div>
+   
+</body>
+
+</html>

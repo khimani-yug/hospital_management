@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final Bill</title>
+    <script src="https://kit.fontawesome.com/c1373248b1.js" crossorigin="anonymous"></script>
+</head>
+<body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fff; color: #333; padding: 40px;">
+
+    <div style="max-width: 800px; margin: 0 auto; border: 1px solid #ccc; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+        <div style="text-align: center; margin-bottom: 40px;">
+            <h1 style="color: #007bff; margin-bottom: 5px;"><i class="fas fa-hospital"></i> Radha Krishna Multispeciality Hospital</h1>
+            <p style="font-size: 18px; color: #555;">Final Billing Summary</p>
+        </div>
+
+        <!-- Patient Info -->
+        <div style="margin-bottom: 30px;">
+            <h2 style="color: #28a745; border-bottom: 2px solid #28a745; padding-bottom: 5px;">
+                <i class="fas fa-user-injured"></i> Patient Info
+            </h2>
+            <ul style="list-style: none; padding-left: 0; font-size: 16px; line-height: 1.8;">
+                <li><strong>Name:</strong> <u>{{ patient_detail.patient_name.first_name }} {{ patient_detail.patient_name.last_name }}</u></li>
+                <li><strong>Email:</strong> <u>{{ patient_detail.patient_name.email }}</u></li>
+                <li><strong>Department:</strong> <u>{{ patient_detail.patient_name.department }}</u></li>
+                <li><strong>Admit Date:</strong> <u>{{ patient_detail.admit_date }}</u></li>
+                <li><strong>Ward:</strong> <u>{{ patient_detail.ward_number }}</u> | <strong>Bed:</strong> <u>{{ patient_detail.bed_number }}</u></li>
+                <li><strong>Discharge Date:</strong> <u>{{ patient_detail.discharge_date }}</u></li>
+            </ul>
+        </div>
+
+        <!-- Doctors -->
+        <div style="margin-bottom: 30px;">
+            <h2 style="color: #17a2b8; border-bottom: 2px solid #17a2b8; padding-bottom: 5px;">
+                <i class="fas fa-user-md"></i> Assigned Doctors
+            </h2>
+            <ul style="list-style: none; padding-left: 0; font-size: 16px; line-height: 1.6;">
+                {% for i in patient_detail.doctor.all %}
+                    <li><i class="fas fa-user"></i> <b>{{ i.username }}</b></li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Billing Details -->
+        <div style="margin-bottom: 30px;">
+            <h2 style="color: #ffc107; border-bottom: 2px solid #ffc107; padding-bottom: 5px;">
+                <i class="fas fa-file-invoice-dollar"></i> Billing Details
+            </h2>
+            <div style="padding: 15px; background-color: #f9f9f9; border-radius: 8px; border: 1px solid #ddd;">
+                {% for i in doctor_charge %}
+                    <div style="display: flex; justify-content: space-between; padding: 5px 0;">
+                        <span>{{ i.name }}</span>
+                        <span>{{ i.visit_charge }} × {{ i.Total_visit }}</span>
+                        <span>= ₹{{ i.Total_charge }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div style="margin-bottom: 30px;">
+            <h3 style="color: #6c757d; margin-bottom: 10px;"><i class="fas fa-bed"></i> Ward Charge:</h3>
+            <p style="font-size: 16px;">{{ wardcharge }} × {{ total_days }} days = <strong>₹{{ total_ward_charge }}</strong></p>
+
+            <h3 style="color: #6c757d; margin-top: 20px;"><i class="fas fa-calculator"></i> Total Amount:</h3>
+            <p style="font-size: 16px;">
+                Doctor Charges: ₹{{ total_doctor_charge }} + Ward Charges: ₹{{ total_ward_charge }}
+            </p>
+            <h2 style="color: #dc3545; margin-top: 10px;">Grand Total: ₹{{ total }}</h2>
+        </div>
+
+    </div>
+</body>
+</html>

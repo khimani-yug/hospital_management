@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Dashboard</title>
+    <link rel="stylesheet" href="{% static 'css/doctor_dashboard.css' %}">
+    <script src="https://kit.fontawesome.com/c1373248b1.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    {% csrf_token %}
+    <div class="header">
+        <h1><i class="fa fa-hospital-o"></i> Radha Krishna Multispeciality Hospital</h1>
+    </div>
+
+    <div class="summary-box">
+        <p><i class="fa fa-list"></i> Total Visits: <span class="badge">{{ total }}</span></p>
+        <p><i class="fa fa-check-circle"></i> Completed: <span class="badge green">{{ visited }}</span></p>
+        <p><i class="fa fa-clock"></i> Pending: <span class="badge orange">{{ pending }}</span></p>
+    </div>
+
+    <div class="filter-section">
+        <h3><i class="fa fa-user-injured"></i> Patient Details</h3>
+        <label for="ward">Filter by Ward:</label>
+        <select name="ward" id="ward" onchange="redirectToPage(this)">
+            <option value="">All Wards</option>
+            {% for i in all_wards %}
+                <option value="{{ i.id }}" {% if i.id == ward_id %} selected {% endif %}>{{ i.ward_name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <form action="{% url 'doctor_page' %}?user_data={{user_role}}" method="get" class="search-form">
+        <input style = "margin-right:150px;" name="search" type="text" placeholder="Search..." value="{{search}}">
+    </form>
+
+    <table class="patient-table">
+        <thead>
+            <tr>
+                <th><i class="fa fa-user"></i> Usarname</th>
+                <th><i class="fa fa-user"></i> First Name</th>
+                <th><i class="fa fa-user"></i> Last Name</th>
+                <th><i class="fa fa-calendar"></i> Admit Date</th>
+                <th><i class="fa fa-procedures"></i> Ward</th>
+                <th><i class="fa fa-bed"></i> Bed No</th>
+                <th><i class="fa fa-info-circle"></i> Patient Info</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for i in page_obj.object_list %}
+                {%if i.discharge == False %}
+                    <tr>
+                        <td>{{ i.patient_name.username }}</td>
+                        <td>{{ i.patient_name.first_name }}</td>
+                        <td>{{ i.patient_name.last_name }}</td>
+                        <td>{{ i.admit_date }}</td>
+                        <td>{{ i.ward_number }}</td>
+                        <td>{{ i.bed_number }}</td>
+                        <td><a href="{% url 'patient_details' i.patient_name.id %}" class="info-btn">View Info</a></td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&user_role={{user_role}}&search={{search}}">&lt;</a>
+        {% endif %}
+        <span>{{ page_obj.number }}</span>
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&user_role={{user_role}}&search={{search}}">&gt;</a>
+        {% endif %}
+        {% if page_obj.number != total_page %}
+            <span>Total Page {{ total_page }}</span>
+        {% endif %}
+    </div>
+
+    <div class="logout">
+        <a href="{% url 'logout' %}"><i class="fa fa-sign-out-alt"></i> Logout</a>
+    </div>
+
+    <script>
+        function redirectToPage(selectElement) {
+            const selectedValue = selectElement.value || "";
+            window.location.href = "?ward_id=" + selectedValue;
+        }
+    </script>
+</body>
+</html>

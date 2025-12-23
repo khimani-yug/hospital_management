@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receptionist Dashboard | RKMSH</title>
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+    
+</head>
+<body>
+{% csrf_token %}
+<div class="main_box">
+    <div class="sidebar_menu">
+        <div class="logo">
+            <a href="#"><i class="fa-solid fa-hospital"></i> RKMS Hospital</a>
+        </div>
+        {% if request.session.user_data.role.name == 'Receptionist' %}
+        <ul>
+            <li><a href="/get_all_user/"><i class="fa-solid fa-users"></i> All Users</a></li>
+            {% for i in request.session.user_roles %}
+            <li><a href="/get_all_user/?user_role={{i.id}}"><i class="fa-solid fa-user-tag"></i> {{i.name}}</a></li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        <div class="logout-btn">
+            <a href="{% url 'logout' %}"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+        </div>
+    </div>
+
+    <div class="content">
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <form action="{% url 'get_all_user' %}"   method="get" class="search-form">
+            <input name="user_role" type="hidden" value="{{user_role}}">
+            <input name="search" type="text" placeholder="Search..." value="{{search}}">
+        </form>
+
+        <div class="table_section">
+          <div class="table_container">
+            <table>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Role</th>
+                    <th>Department</th>
+                    <th colspan="4">Actions</th>
+                </tr>
+                {% for user in page_obj.object_list %}
+                    {% if user.id in discharge_patient %}
+                        <tr style="background: #f8d7da;">
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.first_name }}</td>
+                            <td>{{ user.last_name }}</td>
+                            <td>{{ user.role.name }}</td>
+                            <td>{{ user.department.name }}</td>
+
+
+                            <td><a href="{% url 'edit_info' user.id %}"><i class="fa-solid fa-pen-to-square"></i>Edit</a></td>
+                            {% if user.role.name == 'Patient' %}
+                            <td><a href="{% url 'add_patient_info' user.id %}"><i class="fa-solid fa-file-circle-plus"></i>Add Info</a></td>
+                            <td><a href="{% url 'patient_details' user.id %}"><i class="fa-solid fa-circle-info"></i>Info</a></td>
+                            {% endif %}
+                            <td><a href="{% url 'delete_info' user.id %}"><i class="fa-solid fa-trash-can"></i></a></td>
+
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.first_name }}</td>
+                            <td>{{ user.last_name }}</td>
+                            <td>{{ user.role.name }}</td>
+                            <td>{{ user.department.name }}</td>
+
+
+                            <td><a href="{% url 'edit_info' user.id %}"><i class="fa-solid fa-pen-to-square"></i>Edit</a></td>
+                            {% if user.role.name == 'Patient' %}
+                            <td><a href="{% url 'add_patient_info' user.id %}"><i class="fa-solid fa-file-circle-plus"></i>Add Info</a></td>
+                            <td><a href="{% url 'patient_details' user.id %}"><i class="fa-solid fa-circle-info"></i>Info</a></td>
+                            {% endif %}
+                            <td><a href="{% url 'delete_info' user.id %}"><i class="fa-solid fa-trash-can"></i></a></td>
+
+                        </tr>
+                    {% endif %}
+
+                
+                {% endfor %}
+            </table>
+            </div>
+        </div>
+
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}&user_role={{user_role}}&search={{search}}">&lt;</a>
+            {% endif %}
+            <span>{{ page_obj.number }}</span>
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}&user_role={{user_role}}&search={{search}}">&gt;</a>
+            {% endif %}
+            {% if page_obj.number != total_page %}
+                <span>Total Page {{ total_page }}</span>
+            {% endif %}
+        </div>
+
+        <div style="text-align: right;">
+            <button id="add"><a href="{% url 'add_info'%}?role={{add_user_role.name}}"><i class="fa fa-plus"></i> Add User</a></button>
+        </div>
+    </div>
+</div>
+</body>
+</html>

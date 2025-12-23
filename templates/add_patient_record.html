@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Patient Record</title>
+    <link rel="stylesheet" href="{% static 'css/add_patient_record.css' %}">
+    <script src="https://kit.fontawesome.com/c1373248b1.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="header">
+        <h1><i class="fa fa-hospital-o"></i> Radha Krishna Multispeciality Hospital</h1>
+    </div>
+
+    <div class="form-container">
+        <h2><i class="fas fa-notes-medical"></i> Add Patient Record</h2>
+        <form action="{% url 'add_patient_data' %}" method="post">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="patient_name"><i class="fas fa-user-injured"></i> Patient Name:</label>
+                <input type="text" id="patient_name" name="patient_name" value="{{ patient_id.username }}" readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="doctor_name"><i class="fas fa-user-md"></i> Doctor:</label>
+                <input type="text" id="doctor_name" name="doctor_name" value="{{ doctor_id.username }}" readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="bood_pressure"><i class="fas fa-tachometer-alt"></i> Blood Pressure:</label>
+                <input type="text" id="bood_pressure" name="bood_presure">
+            </div>
+
+            <div class="form-group">
+                <label for="sugar"><i class="fas fa-capsules"></i> Sugar:</label>
+                <input type="text" id="sugar" name="sugar">
+            </div>
+
+            <div class="form-group">
+                <label for="oxygen"><i class="fas fa-lungs"></i> Oxygen:</label>
+                <input type="text" id="oxygen" name="oxygen">
+            </div>
+
+            <div class="form-group">
+                <label for="description"><i class="fas fa-align-left"></i> Description:</label>
+                <textarea id="description" name="description" rows="4"></textarea>
+            </div>
+
+            <button type="submit" class="submit-btn"><i class="fas fa-check-circle"></i> Submit</button>
+        </form>
+        <a class="back"  href="{{request.META.HTTP_REFERER}}">Back</a>
+
+    </div>
+</body>
+</html>

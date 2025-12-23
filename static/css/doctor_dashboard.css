@@ -1,0 +1,147 @@
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  margin: 0;
+  background-color: #f4f8fc;
+  color: #333;
+}
+
+.header {
+  text-align: center;
+  background-color: #0066cc;
+  color: white;
+  padding: 20px 0;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.header i {
+  margin-right: 10px;
+}
+
+.summary-box {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  padding: 20px;
+  background-color: #e6f0ff;
+  margin: 20px;
+  border-radius: 10px;
+}
+
+.summary-box p {
+  font-size: 18px;
+}
+
+.badge {
+  font-weight: bold;
+  background-color: lightblue;
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+
+.badge.green {
+  background-color: #a2f5a2;
+}
+
+.badge.orange {
+  background-color: #ffdd99;
+}
+
+.filter-section {
+  margin: 20px auto;
+  text-align: center;
+}
+
+.filter-section select {
+  padding: 6px 10px;
+  font-size: 16px;
+  border-radius: 5px;
+}
+
+.patient-table {
+  width: 80%;
+  margin: 30px auto;
+  border-collapse: collapse;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+
+.patient-table th,
+.patient-table td {
+  border: 1px solid #ddd;
+  padding: 12px;
+  text-align: center;
+}
+
+.patient-table th {
+  background-color: #007acc;
+  color: white;
+}
+
+.patient-table td {
+  background-color: #fff;
+}
+
+.info-btn {
+  color: white;
+  background-color: #28a745;
+  padding: 6px 12px;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.info-btn:hover {
+  background-color: #218838;
+}
+
+.logout {
+  text-align: center;
+  margin-top: 40px;
+}
+
+.logout a {
+  text-decoration: none;
+  color: white;
+  background-color: #cc3300;
+  padding: 10px 20px;
+  border-radius: 5px;
+}
+
+.logout a:hover {
+  background-color: #b22a00;
+}
+
+
+.search-form {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+.search-form input[type="text"] {
+  padding: 8px 12px;
+  width: 200px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+
+.pagination {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.pagination a, .pagination span {
+  display: inline-block;
+  margin: 0 5px;
+  padding: 6px 12px;
+  border-radius: 4px;
+  background-color: #e0e7ff;
+  color: #1e3a8a;
+  text-decoration: none;
+}
+
+.pagination a:hover {
+  background-color: #3b82f6;
+  color: white;
+}
