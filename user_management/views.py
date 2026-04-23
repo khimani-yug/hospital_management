@@ -143,24 +143,18 @@ def edit_info(request,id):
     if not user_data or user_data['role']['name'] not in ['Admin', 'Receptionist']:
         return redirect('/')
     try:
-        if id:
-          users_info = User.objects.get(id=id)
-      roles=Role.objects.all()
-      department=Department.objects.all()
-      data = {"users_info":users_info,
-              "roles":roles,
-              "departments":department,
-              
-              }
-      return render(request, 'edit_user.html', context=data)
-
+        users_info = User.objects.get(id=id)
+        roles = Role.objects.all()
+        department = Department.objects.all()
+        data = {
+            "users_info": users_info,
+            "roles": roles,
+            "departments": department,
+        }
+        return render(request, 'edit_user.html', context=data)
     except User.DoesNotExist:
         messages.error(request, "User does not exist")
         return redirect('/get_all_user/')
-
-    data = {"user_info":users_info}
-
-    return render(request, 'dashboard.html', context=data)
 
 from hospital_management.settings import EMAIL_HOST_USER
 from django.core.mail import EmailMultiAlternatives
