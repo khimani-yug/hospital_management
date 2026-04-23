@@ -4,16 +4,19 @@ from django.contrib.auth import authenticate
 from django.contrib import messages
 from .models import *
 from django.contrib.auth import logout as auth_logout, login as auth_login
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.hashers import make_password
 from datetime import datetime
 from django.template.loader import render_to_string
 from django.http import HttpResponse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from weasyprint import HTML  
+try:
+    from weasyprint import HTML  
+except Exception:
+    HTML = None
 # pyright: ignore[reportMissingImports]
-# from django.contrib.auth.hashers import check_password
-# from django.core import management
-# import requests
+import requests
 from django.http import JsonResponse
 
 def home(request):
@@ -79,7 +82,12 @@ def dashboard_page(request):
     else:
         return redirect('/')
 
+@login_required
 def get_all_user(request):
+    user_data = request.session.get('user_data', None)
+    if not user_data or user_data['role']['name'] not in ['Admin', 'Receptionist']:
+        return redirect('/')
+    
     user_role = request.GET.get('user_role',None)
     users = User.objects.all().order_by("id")
     search = request.GET.get('search',"")
@@ -126,12 +134,17 @@ def get_all_user(request):
 
 def logout(request):
     auth_logout(request)
-    del request.session
+    request.session.flush()
     return redirect('/')
 
+@login_required
 def edit_info(request,id):
-    if id:
-      users_info = User.objects.get(id=id)
+    user_data = request.session.get('user_data', None)
+    if not user_data or user_data['role']['name'] not in ['Admin', 'Receptionist']:
+        return redirect('/')
+    try:
+        if id:
+          users_info = User.objects.get(id=id)
       roles=Role.objects.all()
       department=Department.objects.all()
       data = {"users_info":users_info,
@@ -141,7 +154,10 @@ def edit_info(request,id):
               }
       return render(request, 'edit_user.html', context=data)
 
-    
+    except User.DoesNotExist:
+        messages.error(request, "User does not exist")
+        return redirect('/get_all_user/')
+
     data = {"user_info":users_info}
 
     return render(request, 'dashboard.html', context=data)
@@ -200,7 +216,11 @@ def send_email(data,password):
     email.attach_alternative(html_content, 'text/html')
     email.send()
 
+@login_required
 def add_edit(request):
+    user_data = request.session.get('user_data', None)
+    if not user_data or user_data['role']['name'] not in ['Admin', 'Receptionist']:
+        return redirect('/')
     try:
         id = request.POST.get('id',None)
         username = request.POST.get('edit_name',None)
@@ -242,9 +262,12 @@ def add_edit(request):
                 return render(request,'edit_user.html',context=data)
             edit_add = User()
 
-        role_add = Role.objects.get(id=role)
-
-        department_add = Department.objects.get(id=department)
+        try:
+            role_add = Role.objects.get(id=role)
+            department_add = Department.objects.get(id=department)
+        except (Role.DoesNotExist, Department.DoesNotExist):
+            messages.error(request, "Invalid Role or Department")
+            return redirect('/')
 
 
         edit_add.username = username
@@ -295,13 +318,24 @@ def add_edit(request):
 
 
 
+@login_required
 def delete_info(request,id):
-    d=User.objects.get(id=id)
-    d.delete()
+    user_data = request.session.get('user_data', None)
+    if not user_data or user_data['role']['name'] not in ['Admin', 'Receptionist']:
+        return redirect('/')
+    try:
+        d=User.objects.get(id=id)
+        d.delete()
+    except User.DoesNotExist:
+        pass
 
     return redirect('/get_all_user')
 
+@login_required
 def add_info(request):
+    user_data = request.session.get('user_data', None)
+    if not user_data or user_data['role']['name'] not in ['Admin', 'Receptionist']:
+        return redirect('/')
     user_role = request.GET.get('role',None)
     department=Department.objects.all()
     roles=Role.objects.all()
@@ -310,8 +344,16 @@ def add_info(request):
               "user_role":user_role}
     return render(request,'edit_user.html',context=data)
 
+@login_required
 def add_patient_info(request,id):
-    users_info = User.objects.get(id=id)
+    user_data = request.session.get('user_data', None)
+    if not user_data or user_data['role']['name'] not in ['Admin', 'Receptionist']:
+        return redirect('/')
+    try:
+        users_info = User.objects.get(id=id)
+    except User.DoesNotExist:
+        messages.error(request, "User does not exist")
+        return redirect('/')
     roles=Role.objects.all()
     department=Department.objects.all()
     doctor = User.objects.filter(role__name = "Doctor")
@@ -332,7 +374,11 @@ def add_patient_info(request,id):
             "patient_info":patients_info}
     return render(request, 'add_patient_info.html', context=data)
 
+@login_required
 def edit_patient_info(request):
+    user_data = request.session.get('user_data', None)
+    if not user_data or user_data['role']['name'] not in ['Admin', 'Receptionist']:
+        return redirect('/')
     
     username = request.POST.get('edit_name',None)
     admit_date = request.POST.get('admit_date',None)
@@ -342,13 +388,20 @@ def edit_patient_info(request):
     doctor = request.POST.getlist('doctor',None)
 
     
-    patient_user = User.objects.get(username = username)
-    assign_doctor = User.objects.filter(id__in = doctor)
-    ward_number = Ward.objects.get(id = ward_no)
-    bad_number = Bed.objects.get(id = bed_no)
+    try:
+        patient_user = User.objects.get(username = username)
+        assign_doctor = User.objects.filter(id__in = doctor)
+        ward_number = Ward.objects.get(id = ward_no)
+        bad_number = Bed.objects.get(id = bed_no)
+    except (User.DoesNotExist, Ward.DoesNotExist, Bed.DoesNotExist):
+        messages.error(request, "Invalid data provided")
+        return redirect('/')
 
     if request.POST.get('id',None) :
-        patient_add = PatientsInformation.objects.get(patient_name= patient_user)
+        try:
+            patient_add = PatientsInformation.objects.get(patient_name= patient_user)
+        except PatientsInformation.DoesNotExist:
+            patient_add = PatientsInformation()
     else:
         patient_add = PatientsInformation()
 
@@ -364,23 +417,34 @@ def edit_patient_info(request):
 
     return redirect('/')
 
+@login_required
 def patient_details(request,id):
+    user_data = request.session.get('user_data', None)
+    if not user_data:
+        return redirect('/')
+    
+    # Check if user is trying to see their own details if they are a patient
+    if user_data['role']['name'] == 'Patient' and user_data['id'] != id:
+        return redirect(f'/patient_details/{user_data["id"]}/')
+
     try :
         patient_detail  = PatientsInformation.objects.get(patient_name__id = id)
-    except :
+    except ObjectDoesNotExist :
         messages.error(request,"First add patient info")
-        patient_id = Role.objects.get(name = 'Patient')
-        return redirect(f'/get_all_user/?user_role={patient_id.id}')
-        # return redirect(f"url 'get_all_user'?user_role={patient_id.id}")
+        try:
+            patient_role = Role.objects.get(name = 'Patient')
+            return redirect(f'/get_all_user/?user_role={patient_role.id}')
+        except Role.DoesNotExist:
+            return redirect('/')
         
     report = Report.objects.filter(patient_id = id)
     patient_record  = PatientHealthReport.objects.filter(patient_id = id)
     date = datetime.today()
     visited = DoctorVisit.objects.filter(visited_patient_id = id,date = date )
     p = Paginator(patient_record, 3)
-    page_number = request.GET.get('page')
+    health_page_number = request.GET.get('health_page')
     try:
-        page_obj = p.get_page(page_number)  # returns the desired page object
+        page_obj = p.get_page(health_page_number)  # returns the desired page object
     except PageNotAnInteger:
         # if page_number is not an integer then assign the first page
         page_obj = p.page(1)
@@ -389,9 +453,9 @@ def patient_details(request,id):
         page_obj = p.page(p.num_pages)
 
     report_page = Paginator(report, 3)
-    page_number = request.GET.get('page')
+    report_page_number = request.GET.get('report_page')
     try:
-        page_obj_report = report_page.get_page(page_number)  # returns the desired page object
+        page_obj_report = report_page.get_page(report_page_number)  # returns the desired page object
     except PageNotAnInteger:
         # if page_number is not an integer then assign the first page
         page_obj_report = report_page.page(1)
@@ -414,11 +478,19 @@ def patient_details(request,id):
 
     return render(request, 'patient_details.html', context=data)
 
+@login_required
 def upload_report(request):
+    user_data = request.session.get('user_data', None)
+    if not user_data or user_data['role']['name'] not in ['Admin', 'Receptionist']:
+        return redirect('/')
     patient_id = request.POST.get('id',None)
     report = request.FILES.get('file', None)
     enter_report=Report()
-    patient_info = User.objects.get(id = patient_id)
+    try:
+        patient_info = User.objects.get(id = patient_id)
+    except User.DoesNotExist:
+        messages.error(request, "Patient does not exist")
+        return redirect('/')
 
     enter_report.patient_id = patient_info
     enter_report.report = report
@@ -429,9 +501,16 @@ def upload_report(request):
 
     return redirect(reverse(f'patient_details',args=[patient_id]))
 
+@login_required
 def doctor_page(request):
     user_data = request.session.get('user_data', None)
-    doctor = User.objects.get(id=user_data['id'])
+    if not user_data or user_data['role']['name'] != 'Doctor':
+        return redirect('/')
+    
+    try:
+        doctor = User.objects.get(id=user_data['id'])
+    except User.DoesNotExist:
+        return redirect('/')
    
     all_wards = Ward.objects.all()  
     ward_id = request.GET.get("ward_id", None)
@@ -481,12 +560,20 @@ def doctor_page(request):
 
     return render(request, 'doctor_dashboard.html', context=data)
 
+@login_required
 def add_patient_record(request):
+    user_data = request.session.get('user_data', None)
+    if not user_data or user_data['role']['name'] != 'Doctor':
+        return redirect('/')
     patient_detail = request.GET.get('patient_detail',None)
     doctor = request.GET.get('doctor',None)
 
-    patient_id = User.objects.get(id = patient_detail)
-    doctor_id = User.objects.get(id = doctor)
+    try:
+        patient_id = User.objects.get(id = patient_detail)
+        doctor_id = User.objects.get(id = doctor)
+    except User.DoesNotExist:
+        messages.error(request, "Invalid patient or doctor")
+        return redirect('/')
 
     data = {
         "patient_id" : patient_id,
@@ -495,44 +582,66 @@ def add_patient_record(request):
 
     return render(request, 'add_patient_record.html', context=data)
 
+@login_required
 def add_patient_data(request):
+    user_data = request.session.get('user_data', None)
+    if not user_data or user_data['role']['name'] != 'Doctor':
+        return redirect('/')
     username_d = request.POST.get('doctor_name',None)
     username_p = request.POST.get('patient_name',None) 
-    bp = request.POST.get('bood_presure',None)
+    bp = request.POST.get('blood_pressure',None)
     sugar = request.POST.get('sugar',None)
     oxygen = request.POST.get('oxygen',None)
     description = request.POST.get('description',None)
     
-    patient_id = User.objects.get(username = username_p)
-    doctor_id = User.objects.get(username = username_d)
+    try:
+        patient_id = User.objects.get(username = username_p)
+        doctor_id = User.objects.get(username = username_d)
+    except User.DoesNotExist:
+        messages.error(request, "Invalid patient or doctor")
+        return redirect('/')
 
     helth_report=PatientHealthReport()
 
     helth_report.patient_id = patient_id
     helth_report.doctor = doctor_id
     helth_report.sugar = sugar
-    helth_report.bood_presure = bp
+    helth_report.blood_pressure = bp
     helth_report.oxygen = oxygen
     helth_report.description = description
 
     helth_report.save()
     return redirect(f'patient_details/{patient_id.id}/')
 
+@login_required
 def delete_report(request,id):
-    
-    d=PatientHealthReport.objects.get(id = id)
-    patient_id=d.patient_id.id
-    d.delete()
+    user_data = request.session.get('user_data', None)
+    if not user_data or user_data['role']['name'] != 'Doctor':
+        return redirect('/')
+    try:
+        d=PatientHealthReport.objects.get(id = id)
+        patient_id=d.patient_id.id
+        d.delete()
+    except PatientHealthReport.DoesNotExist:
+        return redirect('/')
 
     return redirect(reverse(f'patient_details',args=[patient_id]))
 
+@login_required
 def doctor_visit(request):
+    user_data = request.session.get('user_data', None)
+    if not user_data or user_data['role']['name'] != 'Doctor':
+        return redirect('/')
     patient_id = request.POST.get('visited_patient_id',None)
     doctor_id = request.POST.get('visited_doctor_id',None)
     visiting = request.POST.get('visited',None)
 
-    patient_visit = User.objects.get(id = patient_id)
-    doctor_visit = User.objects.get(id = doctor_id)
+    try:
+        patient_visit = User.objects.get(id = patient_id)
+        doctor_visit = User.objects.get(id = doctor_id)
+    except User.DoesNotExist:
+        messages.error(request, "Invalid patient or doctor")
+        return redirect('/')
 
     visit=DoctorVisit()
     visit.visited_patient_id=patient_visit
@@ -541,7 +650,11 @@ def doctor_visit(request):
     visit.save()
     return redirect(f'patient_details/{patient_visit.id}/')
 
+@login_required
 def discharge(request):
+    user_data = request.session.get('user_data', None)
+    if not user_data or user_data['role']['name'] not in ['Admin', 'Receptionist']:
+        return redirect('/')
     patient_detail = request.GET.get('patient_detail',None)
     patient_info = PatientsInformation.objects.get(patient_name = patient_detail)
     date = datetime.today()
@@ -561,16 +674,20 @@ def discharge(request):
 #     return response
     
 
+@login_required
 def bill(request):
+        user_data = request.session.get('user_data', None)
+        if not user_data:
+            return redirect('/')
         patient_detail = request.GET.get('patient_detail',None)
         download = request.GET.get('download',None)
     # try:
         patient_info = PatientsInformation.objects.get(patient_name__id = patient_detail)
         doctors = patient_info.doctor.all()
-        visiting_charge = dict()
         visiting = list()
         all_doctor_charge = 0
         for doctor in doctors :
+            visiting_charge = dict()
             visited = DoctorVisit.objects.filter(visited_patient_id = patient_detail,doctor_visit_id =  doctor.id , visit = True).count()
             if doctor.charges is None:
                 total_doctor_charge = 0
@@ -616,6 +733,8 @@ def bill(request):
             "total" : final
         } 
         if download :
+            if HTML is None:
+                return HttpResponse("PDF generation is not available on this system (missing WeasyPrint dependencies).", status=500)
             # return render_to_pdf('download_bill.html', context_dict=data)
             html_string = render_to_string('download_bill.html', data)
             pdf_file = HTML(string=html_string, base_url=request.build_absolute_uri()).write_pdf()
@@ -632,10 +751,14 @@ def bill(request):
 #     }
 #     return render_to_pdf('bill.html', context)
 
+@login_required
 def hr_attendance_list(request):
+    user_data = request.session.get('user_data', None)
+    if not user_data or user_data['role']['name'] != 'Admin':
+        return redirect('/')
     try:
-        response = request.get("http://192.168.29.16:8000/hr_attendance_list?year=2025&month=4&day=15")
+        response = requests.get("http://192.168.29.16:8000/hr_attendance_list?year=2025&month=4&day=15")
         data = response.json()
         return JsonResponse({'patients': data})
-    except request.exceptions.RequestException as e:
+    except requests.exceptions.RequestException as e:
         return JsonResponse({'error': str(e)}, status=500)

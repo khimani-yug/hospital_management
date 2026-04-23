@@ -64,7 +64,7 @@ class Report(models.Model):
 class PatientHealthReport(models.Model):    
     patient_id = models.ForeignKey(User,on_delete=models.CASCADE,related_name='patient_report_id',null=True)
     date = models.DateField(auto_now=True)
-    bood_presure = models.CharField(max_length=3)
+    blood_pressure = models.CharField(max_length=3)
     sugar = models.CharField(max_length=3)
     oxygen = models.CharField(max_length=3)
     doctor=models.ForeignKey(User,on_delete=models.SET_NULL,related_name='doctor_id',null=True)

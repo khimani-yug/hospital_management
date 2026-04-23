@@ -62,11 +62,11 @@
 
         <div class="pagination">
             {% if page_obj_report.has_previous %}
-                <a href="?page={{ page_obj_report.previous_page_number }}&user_role={{user_role}}&search={{search}}">&lt;</a>
+                <a href="?report_page={{ page_obj_report.previous_page_number }}&health_page={{ page_obj.number }}&user_role={{user_role}}&search={{search}}">&lt;</a>
             {% endif %}
             <span>{{ page_obj_report.number }}</span>
             {% if page_obj_report.has_next %}
-                <a href="?page={{ page_obj_report.next_page_number }}&user_role={{user_role}}&search={{search}}">&gt;</a>
+                <a href="?report_page={{ page_obj_report.next_page_number }}&health_page={{ page_obj.number }}&user_role={{user_role}}&search={{search}}">&gt;</a>
             {% endif %}
             {% if page_obj_report.number != total_report_page %}
                 <span>Total Page {{ total_report_page }}</span>
@@ -110,7 +110,7 @@
                     <td>{{ i.doctor.username }}</td>
                     <td>{{ i.date }}</td>
                     <td>{{ i.time }}</td>
-                    <td>{{ i.bood_presure }}</td>
+                    <td>{{ i.blood_pressure }}</td>
                     <td>{{ i.sugar }}</td>
                     <td>{{ i.oxygen }}</td>
                     <td>{{ i.description }}</td>
@@ -124,11 +124,11 @@
     </div>
     <div class="pagination">
         {% if page_obj.has_previous %}
-            <a href="?page={{ page_obj.previous_page_number }}&user_role={{user_role}}&search={{search}}">&lt;</a>
+            <a href="?health_page={{ page_obj.previous_page_number }}&report_page={{ page_obj_report.number }}&user_role={{user_role}}&search={{search}}">&lt;</a>
         {% endif %}
         <span>{{ page_obj.number }}</span>
         {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}&user_role={{user_role}}&search={{search}}">&gt;</a>
+            <a href="?health_page={{ page_obj.next_page_number }}&report_page={{ page_obj_report.number }}&user_role={{user_role}}&search={{search}}">&gt;</a>
         {% endif %}
         {% if page_obj.number != total_page %}
             <span>Total Page {{ total_page }}</span>

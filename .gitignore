@@ -11,9 +11,8 @@ ENV/
 .venv/
 
 .env 
-# Ignore Django migrations
-*/migrations/
-!*/migrations/__init__.py
+# Django migrations should be tracked
+# */migrations/
 
 # Ignore database files
 *.sqlite3
